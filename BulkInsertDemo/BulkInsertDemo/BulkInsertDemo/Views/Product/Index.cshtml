@@ -1,0 +1,44 @@
+﻿@model IEnumerable<BulkInsertDemo.Models.Product>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2 style="text-align:center;margin-bottom:40px;">Product List</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create","", new { @class = "btn btn-success" })
+</p>
+<table class="table table-hover table-striped">
+    <tr style="background-color:#cce0ff;">
+        <th>
+            @Html.DisplayNameFor(model => model.ProductName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProductName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Price)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Quantity)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>

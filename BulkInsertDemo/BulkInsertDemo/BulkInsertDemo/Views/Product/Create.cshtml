@@ -1,0 +1,145 @@
+﻿@model BulkInsertDemo.Models.Product
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<h2 style="text-align:center;margin-bottom:40px;">Insert Bulk Products at once</h2>
+<hr />
+<div class="row" id="newProduct">
+    <div class="col-sm-4">
+        @Html.LabelFor(model => model.ProductName, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-8">
+            @Html.EditorFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control" } })
+        </div>
+    </div>
+    <div class="col-sm-4">
+        @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-8">
+            @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control" } })
+        </div>
+    </div>
+    <div class="col-sm-4">
+        @Html.LabelFor(model => model.Quantity, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-8">
+            @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control" } })
+        </div>
+    </div>
+</div>
+<div style="margin:20px;float:right;">
+    <button class="btn btn-warning" id="add">Add Product</button>
+</div>
+<table id="dataTable" class="table table-hover table-striped">
+    <tr style="background-color:#cce0ff;">
+        <th>Product Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th></th>
+    </tr>
+</table>
+<div class="submit" style="display:none">
+    <input type="submit" id="submit" value="Save" class="btn btn-success" />
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Edit Product</h4>
+            </div>
+            <div class="modal-body">
+                <p id="productDetails" class="row"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-dismiss="modal" id="editSave">Save</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script language="javascript">
+        $(document).ready(function () {
+            var count = 0;
+            var data = []
+
+            $("#add").click(function (e) {
+                e.preventDefault();
+                var $tableBody = $("#dataTable");
+                var ProductName = $("#ProductName").val();
+                var Price = $("#Price").val();
+                var Quantity = $("#Quantity").val();
+                if (ProductName == "" || Price == "" || Quantity == "" || !ProductName.replace(/\s/g, '').length || !Price.replace(/\s/g, '').length) {
+                    alert("Please fill the required fields")
+                }
+                else {
+                    $("#dataTable").append("<tr id='row" + count + "'><td>" + ProductName + "<td> " + Price + " </td><td> " + Quantity + "</td><td><button type='button' id='editProduct' class='btn btn-info' data-toggle='modal' data-target='#editModal' data-pId = '" + count + "' style = 'width: 80px;margin-right: 5px;'>Edit</button><button id='rmvProduct' class='btn btn-danger' data-pId = '" + count + "'>Remove</button></td></tr>")
+                    count++;
+                    data.push({
+                        ProductName: ProductName,
+                        Price: Price,
+                        Quantity: Quantity
+                    })
+                    console.log(data);
+                    $(".submit").show();
+                    $('#newProduct').find('input').val('');
+                }
+            });
+
+            $('#dataTable').on('click', '#rmvProduct', function () {
+                var jsonId = $(this).attr("data-pId");
+                //data.splice(jsonId,1)
+                delete data[jsonId];
+                $(this).closest('tr').remove();
+                console.log(data);
+                var rowCount = $('#dataTable tr').length;
+                if (rowCount == 1) {
+                    $(".submit").css("display","none");
+                }
+            });
+
+            $('#dataTable').on('click', '#editProduct', function () {
+                var RowId = $(this).attr("data-pId");
+                $('#productDetails').html("<label class = 'col-md-4'>Product Name</label> <input  id='editProductName' name='ProductName' type='text' value='" + data[RowId].ProductName + "' class = 'col-md-8'><br><br><label class = 'col-md-4'>Price</label>  <input  id='editPrice' name='Price' type='text' value='" + data[RowId].Price + "' class = 'col-md-8'><br><br><label class = 'col-md-4'>Quantity</label> <input  id='editQuantity' name='Quantity' type='number' value='" + parseInt(data[RowId].Quantity) + "' class = 'col-md-8'>");
+                $('#editSave').attr("data-pId", RowId);
+
+            });
+
+            $("#editSave").click(function (e) {
+                var RowId = $(this).attr("data-pId");
+                var ProductName = $("#editProductName").val();
+                var Price = $("#editPrice").val();
+                var Quantity = $("#editQuantity").val();
+                var newData = {
+                    ProductName: ProductName,
+                    Price: Price,
+                    Quantity: Quantity
+                }
+                data[RowId] = newData;
+                console.log(data);
+                var editedRow = "<td>" + ProductName + "<td> " + Price + " </td><td> " + Quantity + "</td><td><button type='button' id='editProduct' class='btn btn-info' data-toggle='modal' data-target='#editModal' data-pId = '" + RowId + "' style = 'width: 80px;margin-right: 5px;'>Edit</button><button id='rmvProduct' class='btn btn-danger' data-pId = '" + RowId + "'>Remove</button></td>"
+                $("#row" + RowId).html(editedRow);
+            });
+            $("#submit").click(function (e) {
+                $.ajax({
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    url: "/Product/Save",
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: successFunc,
+                    error: errorFunc
+                });
+                function successFunc(data, status) {
+                    $("#dataTable").html("");
+                    $(".submit").css("display", "none");
+                    window.location = "/Product/Index";
+                }
+                function errorFunc() {
+                    alert("Error");
+                }
+            });
+
+        });
+</script>
