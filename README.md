@@ -1,7 +1,7 @@
 Project Name: Bulk Insert Demo
 
 Description:
-Multiple entries can be added, which will be stored on a client side table. There after entries can be removed and edited before storing all the entries together
+Multiple entries can be added, which will be stored on a client side table. There after entries can be removed and edited in the client side before storing all the entries together
 in the database.
 This project is done using ASP.NET MVC, jQuery and Bootstrap
 
